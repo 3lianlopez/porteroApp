@@ -55,4 +55,8 @@ class DatabaseHelper {
     };
     return await db.insert('matches', data);
   }
+  Future<List<Map<String, dynamic>>> getMatches() async {
+    final db = await database;
+    return await db.query('matches', orderBy: 'date DESC');
+  }
 }

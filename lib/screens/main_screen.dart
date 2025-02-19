@@ -4,6 +4,7 @@ import '../models/goalkeeper_stats.dart';
 import 'dart:async';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'match_summary_screen.dart';
+import 'match_history_screen.dart';
 
 class PerformanceData {
   final String metric;
@@ -149,8 +150,23 @@ class _MainScreenState extends State<MainScreen> {
         title: Text('Portero APP'),
         actions: [
           IconButton(
+            icon: Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MatchHistoryScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.done),
             onPressed: () async {
+              // Stop the timer
+              timer?.cancel();
+              isTimerRunning = false;
+              setState(() {});
+
+              // Save match and navigate to summary
               await DatabaseHelper.instance.saveMatch(stats);
               Navigator.push(
                 context,
@@ -183,6 +199,16 @@ class _MainScreenState extends State<MainScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      Text(
+                        secondsElapsed <= 2400
+                            ? 'Primer Tiempo'
+                            : 'Segundo Tiempo',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
                       SizedBox(height: 8),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -208,6 +234,17 @@ class _MainScreenState extends State<MainScreen> {
                               isTimerRunning ? Icons.pause : Icons.play_arrow,
                             ),
                             label: Text(isTimerRunning ? 'Pause' : 'Start'),
+                          ),
+                          SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                timer?.cancel();
+                                isTimerRunning = false;
+                                secondsElapsed = 2400; // 40 minutes
+                              });
+                            },
+                            child: Text('Fin 1er'),
                           ),
                           SizedBox(width: 16),
                           ElevatedButton(
