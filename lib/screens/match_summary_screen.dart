@@ -9,10 +9,28 @@ class MatchSummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      "PARADAS % " +
+          stats.valoracionParadas.toString() +
+          " VALORACION:: " +
+          stats.valoracionParadas.toString(),
+    );
+    print(
+      "PASES % " +
+          stats.valoracionpases.toString() +
+          " VALORACION:: " +
+          stats.valoracionpases.toString(),
+    );
+    print(
+      "SALIDAS % " +
+          stats.valoracionSalidasExitosas.toString() +
+          " VALORACION:: " +
+          stats.valoracionSalidasExitosas.toString(),
+    );
     double overallEfficiency =
-        (stats.paradasPorcentaje * 0.4 +
-            stats.pasesPorcentaje * 0.3 +
-            stats.porcentajeSalidasExitosas * 0.3);
+        (stats.paradasPorcentaje * stats.valoracionParadas +
+            stats.pasesPorcentaje * stats.valoracionpases +
+            stats.porcentajeSalidasExitosas * stats.valoracionSalidasExitosas);
 
     return Scaffold(
       appBar: AppBar(title: Text('Resumen del Partido')),
