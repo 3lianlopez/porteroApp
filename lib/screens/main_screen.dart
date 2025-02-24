@@ -25,6 +25,9 @@ class _MainScreenState extends State<MainScreen> {
   bool isExtraTime = false;
   Timer? timer;
   bool showSummary = false;
+  // Agregar esta variable de clase
+  bool isSecondHalf = false;
+  Stopwatch stopwatch = Stopwatch();
 
   void _addStatEvent(String statName, bool isIncrement) {
     int currentMinute = secondsElapsed ~/ 60;
@@ -193,7 +196,9 @@ class _MainScreenState extends State<MainScreen> {
                   child: Column(
                     children: [
                       Text(
-                        '${(secondsElapsed ~/ 60).toString().padLeft(2, '0')}:${(secondsElapsed % 60).toString().padLeft(2, '0')}',
+                        '${(secondsElapsed ~/ 60).toString().padLeft(2, '0')}:'
+                        '${(secondsElapsed % 60).toString().padLeft(2, '0')}.'
+                        '${(stopwatch.elapsedMilliseconds % 1000 ~/ 10).toString().padLeft(2, '0')}',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -202,7 +207,11 @@ class _MainScreenState extends State<MainScreen> {
                       Text(
                         secondsElapsed <= 2400
                             ? 'Primer Tiempo'
-                            : 'Segundo Tiempo',
+                            : secondsElapsed <= 4800
+                            ? 'Segundo Tiempo'
+                            : secondsElapsed > 4800
+                            ? 'Extra Time'
+                            : '',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -218,14 +227,31 @@ class _MainScreenState extends State<MainScreen> {
                               setState(() {
                                 isTimerRunning = !isTimerRunning;
                                 if (isTimerRunning) {
-                                  timer = Timer.periodic(Duration(seconds: 1), (
-                                    timer,
-                                  ) {
-                                    setState(() {
-                                      secondsElapsed++;
-                                    });
-                                  });
+                                  stopwatch.start();
+                                  timer = Timer.periodic(
+                                    Duration(milliseconds: 10),
+                                    (timer) {
+                                      setState(() {
+                                        if (isExtraTime) {
+                                          secondsElapsed =
+                                              4800 +
+                                              (stopwatch.elapsedMilliseconds ~/
+                                                  1000);
+                                        } else if (isSecondHalf) {
+                                          secondsElapsed =
+                                              2400 +
+                                              (stopwatch.elapsedMilliseconds ~/
+                                                  1000);
+                                        } else {
+                                          secondsElapsed =
+                                              stopwatch.elapsedMilliseconds ~/
+                                              1000;
+                                        }
+                                      });
+                                    },
+                                  );
                                 } else {
+                                  stopwatch.stop();
                                   timer?.cancel();
                                 }
                               });
@@ -240,18 +266,30 @@ class _MainScreenState extends State<MainScreen> {
                             onPressed: () {
                               setState(() {
                                 timer?.cancel();
+                                stopwatch.stop();
+                                stopwatch.reset();
                                 isTimerRunning = false;
-                                secondsElapsed = 2400; // 40 minutes
+                                if (!isSecondHalf) {
+                                  secondsElapsed = 2400; // Set to 40 minutes
+                                  isSecondHalf = true;
+                                } else {
+                                  secondsElapsed = 4800; // Set to 80 minutes
+                                }
                               });
                             },
-                            child: Text('Fin 1er'),
+                            child: Text(isSecondHalf ? 'Fin 2do' : 'Fin 1er'),
                           ),
                           SizedBox(width: 16),
                           ElevatedButton(
                             onPressed: () {
                               setState(() {
+                                timer?.cancel();
+                                stopwatch.stop();
+                                stopwatch.reset();
+                                isTimerRunning = false;
+                                isSecondHalf = false;
+                                secondsElapsed = 4800; // Set to 80 minutes
                                 isExtraTime = true;
-                                secondsElapsed = 80 * 60;
                               });
                             },
                             child: Text('Extra Time'),
